@@ -4,6 +4,7 @@ import Browser
 import Html exposing (Html, div, input, span, table, text, th, tr)
 import Html.Attributes exposing (class, placeholder, value)
 import Html.Events exposing (onClick, onInput)
+import Murmur3 exposing (hashString)
 import Random
 import Random.List as Random
 import Set.Any as AnySet exposing (AnySet)
@@ -94,6 +95,11 @@ getO =
     getColumn O 61 75
 
 
+getBoard : Random.Generator Board
+getBoard =
+    Random.map5 Board getB getI getN getG getO
+
+
 take5 : (Space -> Space -> Space -> Space -> Space -> a) -> List Space -> Maybe a
 take5 constructor values =
     case values of
@@ -138,27 +144,27 @@ type Msg
     = SetName String
     | SetGame String
     | MarkSpace Space
-    | MakeBoard Int
 
 
 update msg model =
     case msg of
         SetName name ->
-            ( { model | username = name }, Cmd.none )
+            { model | username = name } |> newBoard
 
         SetGame game ->
-            ( { model | game = game }, Cmd.none )
+            { model | game = game } |> newBoard
 
         MarkSpace space ->
-            let
-                _ =
-                    Debug.log "Space:" space
-            in
-            ( { model | marked = AnySet.insert space model.marked }, Cmd.none )
+            ( { model | marked = AnySet.toggle space model.marked }, Cmd.none )
 
-        -- TODO: Use random value
-        MakeBoard seed ->
-            ( model, Cmd.none )
+
+newBoard : Model -> ( Model, Cmd msg )
+newBoard model =
+    let
+        ( new, _ ) =
+            Random.step getBoard (Random.initialSeed (hashString 42069 <| String.toLower model.game ++ String.toLower model.username))
+    in
+    ( { model | board = new }, Cmd.none )
 
 
 
