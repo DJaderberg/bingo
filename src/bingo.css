@@ -1,0 +1,29 @@
+.boardHeader {
+    color: rebeccapurple;
+}
+
+.boardHeader .boardSpace {
+    font-size: 28px;
+    font-family: Times;
+}
+
+.boardSpace {
+    display: inline-block;
+    width: 60px;
+    height: 60px;
+    line-height: 60px;
+    border-style: solid;
+    text-align: center;
+    cursor: pointer;
+    font-size: 22px;
+    font-family: Arial;
+}
+
+.inputLabel {
+    display: inline-block;
+    width: 100px;
+}
+
+.inputField {
+    width: 220px;
+}
