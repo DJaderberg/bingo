@@ -4,7 +4,8 @@
 
 .boardHeader .boardSpace {
     font-size: 28px;
-    font-family: Times;
+    font-family: Times, serif;
+    cursor: auto;
 }
 
 .boardSpace {
@@ -16,7 +17,11 @@
     text-align: center;
     cursor: pointer;
     font-size: 22px;
-    font-family: Arial;
+    font-family: Arial, sans-serif;
+}
+
+.markedSpace {
+    background: greenyellow;
 }
 
 .inputLabel {

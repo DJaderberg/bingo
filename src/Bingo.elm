@@ -6,6 +6,7 @@ import Html.Attributes exposing (class, placeholder, value)
 import Html.Events exposing (onClick, onInput)
 import Random
 import Random.List as Random
+import Set.Any as AnySet exposing (AnySet)
 
 
 
@@ -28,6 +29,10 @@ main =
 type Space
     = Number Int
     | Free
+
+
+type alias SpaceSet =
+    AnySet ( Int, Int ) Space
 
 
 type B
@@ -55,7 +60,7 @@ type Board
 
 
 type alias Model =
-    { game : String, username : String, board : Board }
+    { game : String, username : String, board : Board, marked : SpaceSet }
 
 
 getShuffledNumbers : Int -> Int -> Random.Generator (List Space)
@@ -101,9 +106,18 @@ take5 constructor values =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { game = "", username = "", board = basicBoard }
+    ( { game = "", username = "", board = basicBoard, marked = AnySet.empty compareSpace }
     , Cmd.none
     )
+
+
+compareSpace space =
+    case space of
+        Number number ->
+            ( 0, number )
+
+        Free ->
+            ( 1, 0 )
 
 
 basicBoard : Board
@@ -140,7 +154,7 @@ update msg model =
                 _ =
                     Debug.log "Space:" space
             in
-            ( model, Cmd.none )
+            ( { model | marked = AnySet.insert space model.marked }, Cmd.none )
 
         -- TODO: Use random value
         MakeBoard seed ->
@@ -172,26 +186,41 @@ view model =
                     []
                     [ div [] [ span [ class "inputLabel" ] [ text "Game: " ], input [ class "inputField", placeholder "ID of the game", value model.game, onInput SetGame ] [] ]
                     , div [] [ span [ class "inputLabel" ] [ text "Username: " ], input [ class "inputField", placeholder "Your Twitch username", value model.username, onInput SetName ] [] ]
-                    , viewBoard model.board
+                    , viewBoard model.marked model.board
                     ]
                 ]
 
 
-viewBoard : Board -> Html Msg
-viewBoard (Board (B b1 b2 b3 b4 b5) (I i1 i2 i3 i4 i5) (N n1 n2 n3 n4 n5) (G g1 g2 g3 g4 g5) (O o1 o2 o3 o4 o5)) =
+viewBoard : SpaceSet -> Board -> Html Msg
+viewBoard marked (Board (B b1 b2 b3 b4 b5) (I i1 i2 i3 i4 i5) (N n1 n2 n3 n4 n5) (G g1 g2 g3 g4 g5) (O o1 o2 o3 o4 o5)) =
+    let
+        spaceSpan =
+            spaceToSpan marked
+    in
     table []
         [ th [ class "boardHeader" ] (List.map (text >> List.singleton >> span [ class "boardSpace" ]) [ "B", "I", "N", "G", "O" ])
-        , tr [ class "boardRow" ] (List.map spaceToSpan [ b1, i1, n1, g1, o1 ])
-        , tr [ class "boardRow" ] (List.map spaceToSpan [ b2, i2, n2, g2, o2 ])
-        , tr [ class "boardRow" ] (List.map spaceToSpan [ b3, i3, n3, g3, o3 ])
-        , tr [ class "boardRow" ] (List.map spaceToSpan [ b4, i4, n4, g4, o4 ])
-        , tr [ class "boardRow" ] (List.map spaceToSpan [ b5, i5, n5, g5, o5 ])
+        , tr [ class "boardRow" ] (List.map spaceSpan [ b1, i1, n1, g1, o1 ])
+        , tr [ class "boardRow" ] (List.map spaceSpan [ b2, i2, n2, g2, o2 ])
+        , tr [ class "boardRow" ] (List.map spaceSpan [ b3, i3, n3, g3, o3 ])
+        , tr [ class "boardRow" ] (List.map spaceSpan [ b4, i4, n4, g4, o4 ])
+        , tr [ class "boardRow" ] (List.map spaceSpan [ b5, i5, n5, g5, o5 ])
         ]
 
 
-spaceToSpan : Space -> Html Msg
-spaceToSpan s =
-    s |> spaceToText |> text |> List.singleton |> span [ class "boardSpace", onClick (MarkSpace s) ]
+spaceToSpan : SpaceSet -> Space -> Html Msg
+spaceToSpan marked s =
+    let
+        isMarked =
+            if AnySet.member s marked then
+                [ class "markedSpace" ]
+
+            else
+                []
+
+        attributes =
+            List.append [ class "boardSpace", onClick (MarkSpace s) ] isMarked
+    in
+    s |> spaceToText |> text |> List.singleton |> span attributes
 
 
 spaceToText space =
