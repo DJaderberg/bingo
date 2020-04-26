@@ -1,26 +1,12 @@
 module Bingo exposing (..)
 
-import Browser
-import Html exposing (Html, div, input, span, table, text, th, tr)
-import Html.Attributes exposing (class, placeholder, value)
-import Html.Events exposing (onClick, onInput)
+import Html exposing (Html, span, table, tbody, td, text, th, thead, tr)
+import Html.Attributes exposing (class)
+import Html.Events exposing (onClick)
 import Murmur3 exposing (hashString)
 import Random
 import Random.List as Random
 import Set.Any as AnySet exposing (AnySet)
-
-
-
--- MAIN
-
-
-main =
-    Browser.element
-        { init = init
-        , update = update
-        , subscriptions = subscriptions
-        , view = view
-        }
 
 
 
@@ -58,10 +44,6 @@ type O
 
 type Board
     = Board B I N G O
-
-
-type alias Model =
-    { game : String, username : String, board : Board, marked : SpaceSet }
 
 
 getShuffledNumbers : Int -> Int -> Random.Generator (List Space)
@@ -110,13 +92,6 @@ take5 constructor values =
             Nothing
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( { game = "", username = "", board = basicBoard, marked = AnySet.empty compareSpace }
-    , Cmd.none
-    )
-
-
 compareSpace space =
     case space of
         Number number ->
@@ -124,16 +99,6 @@ compareSpace space =
 
         Free ->
             ( 1, 0 )
-
-
-basicBoard : Board
-basicBoard =
-    Board
-        (B (Number 1) (Number 2) (Number 3) (Number 4) (Number 5))
-        (I (Number 16) (Number 17) (Number 18) (Number 19) (Number 20))
-        (N (Number 31) (Number 32) Free (Number 34) (Number 35))
-        (G (Number 46) (Number 47) (Number 48) (Number 49) (Number 50))
-        (O (Number 61) (Number 62) (Number 63) (Number 64) (Number 65))
 
 
 
@@ -146,75 +111,39 @@ type Msg
     | MarkSpace Space
 
 
-update msg model =
-    case msg of
-        SetName name ->
-            { model | username = name } |> newBoard
-
-        SetGame game ->
-            { model | game = game } |> newBoard
-
-        MarkSpace space ->
-            ( { model | marked = AnySet.toggle space model.marked }, Cmd.none )
-
-
-newBoard : Model -> ( Model, Cmd msg )
 newBoard model =
     let
-        ( new, _ ) =
-            Random.step getBoard (Random.initialSeed (hashString 42069 <| String.toLower model.game ++ String.toLower model.username))
+        board =
+            makeBoard <| String.toLower model.game ++ String.toLower model.username
     in
-    ( { model | board = new }, Cmd.none )
+    ( { model | board = board }, Cmd.none )
 
 
-
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none
-
-
-
--- VIEW
-
-
-view : Model -> Html Msg
-view model =
-    case model of
-        _ ->
-            div []
-                [ Html.node "link"
-                    [ Html.Attributes.rel "stylesheet", Html.Attributes.href "bingo.css" ]
-                    []
-                , div
-                    []
-                    [ div [] [ span [ class "inputLabel" ] [ text "Game: " ], input [ class "inputField", placeholder "ID of the game", value model.game, onInput SetGame ] [] ]
-                    , div [] [ span [ class "inputLabel" ] [ text "Username: " ], input [ class "inputField", placeholder "Your Twitch username", value model.username, onInput SetName ] [] ]
-                    , viewBoard model.marked model.board
-                    ]
-                ]
+makeBoard : String -> Board
+makeBoard seed =
+    Random.step getBoard (Random.initialSeed (hashString 42069 <| seed)) |> Tuple.first
 
 
 viewBoard : SpaceSet -> Board -> Html Msg
 viewBoard marked (Board (B b1 b2 b3 b4 b5) (I i1 i2 i3 i4 i5) (N n1 n2 n3 n4 n5) (G g1 g2 g3 g4 g5) (O o1 o2 o3 o4 o5)) =
     let
         spaceSpan =
-            spaceToSpan marked
+            spaceToTd marked
     in
-    table []
-        [ th [ class "boardHeader" ] (List.map (text >> List.singleton >> span [ class "boardSpace" ]) [ "B", "I", "N", "G", "O" ])
-        , tr [ class "boardRow" ] (List.map spaceSpan [ b1, i1, n1, g1, o1 ])
-        , tr [ class "boardRow" ] (List.map spaceSpan [ b2, i2, n2, g2, o2 ])
-        , tr [ class "boardRow" ] (List.map spaceSpan [ b3, i3, n3, g3, o3 ])
-        , tr [ class "boardRow" ] (List.map spaceSpan [ b4, i4, n4, g4, o4 ])
-        , tr [ class "boardRow" ] (List.map spaceSpan [ b5, i5, n5, g5, o5 ])
+    table [ class "board" ]
+        [ thead [] [ th [ class "boardHeader" ] (List.map (text >> List.singleton >> span [ class "boardSpace" ]) [ "B", "I", "N", "G", "O" ]) ]
+        , tbody []
+            [ tr [ class "boardRow" ] (List.map spaceSpan [ b1, i1, n1, g1, o1 ])
+            , tr [ class "boardRow" ] (List.map spaceSpan [ b2, i2, n2, g2, o2 ])
+            , tr [ class "boardRow" ] (List.map spaceSpan [ b3, i3, n3, g3, o3 ])
+            , tr [ class "boardRow" ] (List.map spaceSpan [ b4, i4, n4, g4, o4 ])
+            , tr [ class "boardRow" ] (List.map spaceSpan [ b5, i5, n5, g5, o5 ])
+            ]
         ]
 
 
-spaceToSpan : SpaceSet -> Space -> Html Msg
-spaceToSpan marked s =
+spaceToTd : SpaceSet -> Space -> Html Msg
+spaceToTd marked s =
     let
         isMarked =
             if AnySet.member s marked then
@@ -226,7 +155,7 @@ spaceToSpan marked s =
         attributes =
             List.append [ class "boardSpace", onClick (MarkSpace s) ] isMarked
     in
-    s |> spaceToText |> text |> List.singleton |> span attributes
+    s |> spaceToText |> text |> List.singleton |> td attributes
 
 
 spaceToText space =
@@ -235,4 +164,4 @@ spaceToText space =
             String.fromInt n
 
         Free ->
-            "Free!"
+            "Free"

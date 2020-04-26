@@ -1,22 +1,35 @@
+.everything {
+    margin-top: 1vh;
+}
+.board {
+    border-collapse: collapse;
+    border-spacing: 0;
+    background: black;
+    margin: 2vw;
+}
 .boardHeader {
     color: rebeccapurple;
 }
 
 .boardHeader .boardSpace {
-    font-size: 28px;
+    font-size: min(12vw, 75px);
     font-family: Times, serif;
     cursor: auto;
 }
 
 .boardSpace {
+    background: white;
+    padding: 0;
     display: inline-block;
-    width: 60px;
-    height: 60px;
-    line-height: 60px;
+    width: min(17.6vw, 120px);
+    height: min(17.6vw, 120px);
+    line-height: min(17.6vw, 120px);
     border-style: solid;
+    border-width: min(0.5vw, 5px);
+    border-collapse: collapse;
     text-align: center;
     cursor: pointer;
-    font-size: 22px;
+    font-size: min(8vw, 50px);
     font-family: Arial, sans-serif;
 }
 
@@ -26,9 +39,34 @@
 
 .inputLabel {
     display: inline-block;
-    width: 100px;
+    margin-left: 1vw;
+    width: min(29vw, 200px);
+    font-size: min(5vw, 24px);
 }
 
 .inputField {
-    width: 220px;
+    width: min(60vw, 450px);
+    font-size: min(5vw, 24px);
+}
+
+.numberInput {
+    font-size: min(5vw, 24px);
+    width: min(5vw, 37px);
+    margin-bottom: min(0.5vw, 3px);
+    margin-right: min(1vw, 6px);
+}
+
+.numberInputText {
+    font-size: min(5vw, 24px);
+    margin-left: 1vw;
+    width: min(29vw, 200px);
+    display: inline-block;
+}
+
+.spaceButton {
+    font-size: min(5vw, 24px);
+}
+
+.spaceButton:hover {
+    background: #af1c33;
 }
