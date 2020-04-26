@@ -1,3 +1,7 @@
+body {
+    background: #afa1a8;
+}
+
 .everything {
     margin-top: 1vh;
 }
@@ -18,7 +22,7 @@
 }
 
 .boardSpace {
-    background: white;
+    background: #afa1a8;
     padding: 0;
     display: inline-block;
     width: min(17.6vw, 120px);
@@ -34,7 +38,7 @@
 }
 
 .markedSpace {
-    background: greenyellow;
+    background: #8fcd23;
 }
 
 .inputLabel {
